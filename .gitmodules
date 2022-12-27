@@ -1,0 +1,6 @@
+[submodule "HugoTeX"]
+	path = HugoTeX
+	url = git@github.com:kaisugi/HugoTeX.git
+[submodule "themes/HugoTeX"]
+	path = themes/HugoTeX
+	url = git@github.com:kaisugi/HugoTeX.git
