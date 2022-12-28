@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en"><meta charset="utf-8" />
 
-  <title>Rich Flow - Rich Flow</title>
+  <title>Flow - Flow</title>
 
 
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 
-<link rel="alternate" type="application/rss+xml" href="https://richwhitjr.github.io/index.xml" title="Rich Flow" />
+<link rel="alternate" type="application/rss+xml" href="https://richwhitjr.github.io/index.xml" title="Flow" />
 <link rel="stylesheet" href="https://richwhitjr.github.io/css/latex.css" />
 <link rel="stylesheet" href="https://richwhitjr.github.io/css/main.css" />
 
@@ -37,7 +37,7 @@
     <div class="container">
       <div class="page-heading">
         
-          <h1>Rich Flow</h1>
+          <h1>Flow</h1>
           
             <p class="author">Rich Whitcomb</p>
 
@@ -64,8 +64,26 @@
 
       
         <article class="post-preview">
-  <a href="https://richwhitjr.github.io/posts/hello/">
-      <h2 class="post-title">Hello</h2>
+  <a href="https://richwhitjr.github.io/posts/cuda_bazel/">
+      <h2 class="post-title">Bazel &#43; Python &#43; CUDA</h2>
+  </a>
+  <div class="postmeta">
+    <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>Dec 27, 2022
+  
+</span>
+  </div>
+  <div class="post-entry">
+    
+      <p>One of the gaps with the current Bazel Python Rules is that it does not handle pip dependencies well when you need to install a different library if you have cuda available or not. This is a problem with torch where a different install is needed depending on cuda. This post is a fairly minimal workaround for the problem where a new repository rule is created that uses different requirements.txt files if CUDA is found or not.</p>
+        <a href="https://richwhitjr.github.io/posts/cuda_bazel/" class="post-read-more">Read More</a>
+    
+  </div>
+</article>
+      
+        <article class="post-preview">
+  <a href="https://richwhitjr.github.io/posts/flow/">
+      <h2 class="post-title">Flow</h2>
   </a>
   <div class="postmeta">
     <span class="meta-post">
@@ -74,6 +92,9 @@
 </span>
   </div>
   <div class="post-entry">
+    
+      <p>Flow is maybe the most overused word in the Data Engineering world. There is a running joke in the industry that every company, at some point in their histry, has to develop an internal tool named DataFlow. Google, now have finally put a nail in that for new projects with it Google Cloud Offering, has only given rise the slight variations on the name for new workflow and data systems. It is a suffix that will not disappear.</p>
+        <a href="https://richwhitjr.github.io/posts/flow/" class="post-read-more">Read More</a>
     
   </div>
 </article>
