@@ -6,7 +6,17 @@
     <description>Recent content in Posts on Flow</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 27 Dec 2022 09:13:30 -0500</lastBuildDate><atom:link href="https://richwhitjr.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 27 Dec 2022 20:01:55 -0500</lastBuildDate><atom:link href="https://richwhitjr.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Bazel &#43; Beam/Dataflow</title>
+      <link>https://richwhitjr.github.io/posts/bazel_dataflow/</link>
+      <pubDate>Tue, 27 Dec 2022 20:01:55 -0500</pubDate>
+      
+      <guid>https://richwhitjr.github.io/posts/bazel_dataflow/</guid>
+      <description>Python Beam on DataFlow allows for a few options for including internal and external dependencies in your jobs. None of these works very well with bazel however because of the way third party dependencies are packaged.
+The main issue is that Bazel Python does not install pip libraries on the system or in the container if you choose that route. That means there is not a great way to register external dependencies with the job like mentioned in the above document.</description>
+    </item>
+    
     <item>
       <title>Bazel &#43; Python &#43; CUDA</title>
       <link>https://richwhitjr.github.io/posts/cuda_bazel/</link>
