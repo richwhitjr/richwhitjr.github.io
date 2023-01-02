@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Flow</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 27 Dec 2022 20:01:55 -0500</lastBuildDate><atom:link href="https://richwhitjr.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 30 Dec 2022 09:54:15 -0500</lastBuildDate><atom:link href="https://richwhitjr.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>BigQuery Cloud Functions</title>
+      <link>https://richwhitjr.github.io/posts/bq_fns/</link>
+      <pubDate>Fri, 30 Dec 2022 09:54:15 -0500</pubDate>
+      
+      <guid>https://richwhitjr.github.io/posts/bq_fns/</guid>
+      <description>One pattern that I learned about recently is that BigQuery allows for functions to be registered with itself that are backed by GCP Cloud Functions. This is very powerful pattern that allows for much more complex functions than what you can do with the normal BigQuery User Defined Functions. In this post I will walk through at a high level how to do with this Python but this can work with any language supported by Cloud Functions.</description>
+    </item>
+    
     <item>
       <title>Bazel &#43; Beam/Dataflow</title>
       <link>https://richwhitjr.github.io/posts/bazel_dataflow/</link>
