@@ -1,7 +1,6 @@
 baseURL = "https://richwhitjr.github.io/"
 title = "Flow"
 theme = "hugotex"
-paginate = 3
 languageCode = "en"
 DefaultContentLanguage = "en"
 enableInlineShortcodes = true
