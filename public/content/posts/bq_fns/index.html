@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-us"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<meta charset="utf-8" />
+
+  <title>BigQuery Cloud Functions - Flow</title>
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+<link rel="stylesheet" href="http://localhost:1313/css/latex.css" />
+<link rel="stylesheet" href="http://localhost:1313/css/main.css" />
+<script id="MathJax-script" async src="http://localhost:1313/js/tex-mml-chtml.js"></script>
+</head>
+<body class="latex-dark">
+
+
+
+
+
+
+<header>
+  <nav class="navbar">
+  <div class="nav">
+    
+
+    <ul class="nav-links">
+      
+    </ul>
+  </div>
+</nav>
+  <div class="intro-header">
+    <div class="container">
+      <div class="content-heading">
+        
+          <h1>BigQuery Cloud Functions</h1>
+          
+        
+      </div>
+    </div>
+  </div>
+</header>
+<div id="content">
+  <div class="container" role="main">
+    <article class="article" class="blog-post">
+      <div class="postmeta">
+        <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>
+  Dec 30, 2022
+  
+</span>
+      </div>
+      <br>
+      
+    <p>One pattern that I learned about recently is that BigQuery allows for functions to be registered with itself that are backed by GCP Cloud Functions.  This is very powerful pattern that allows for much more complex functions than what you can do with the normal BigQuery User Defined Functions.  In this post I will walk through at a high level how to do with this Python but this can work with any language supported by Cloud Functions.</p>
+<p>I found this example when attempting to call an rdkit function from BigQuery and discovered that someone had done this already in this <a href="https://github.com/vjb-collab/cheminformatics-bq">project</a>.</p>
+<p>The first step is to define the function.  For this example I will round trip a SMILES string from BigQuery to make sure it is a canonical SMILES using the rdkit library which also gives an example of third party dependency.</p>
+<p>First lets write a function in a file called <code>function.py</code>.  The official (BigQuery documentation)[https://cloud.google.com/bigquery/docs/reference/standard-sql/remote-functions] has more details on this format but at a high level your python function receives a request object with a list of calls on it.  BigQuery will batch up rows together so you have to handle a list of calls.  Each call object has an array of values for each argument for a function.  Since this example only takes a single argumement we will just call the first one.  Finally you can call your function and return the values back as JSON in the format expected by BigQuery.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#5bc4bf">import</span> <span style="color:#fec418">json</span>
+</span></span><span style="display:flex;"><span><span style="color:#5bc4bf">from</span> <span style="color:#fec418">rdkit</span> <span style="color:#5bc4bf">import</span> Chem
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">rdkit_canonical_smiles</span>(request):
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>        return_value <span style="color:#5bc4bf">=</span> []
+</span></span><span style="display:flex;"><span>        request_json <span style="color:#5bc4bf">=</span> request<span style="color:#5bc4bf">.</span>get_json()
+</span></span><span style="display:flex;"><span>        calls <span style="color:#5bc4bf">=</span> request_json[<span style="color:#48b685">&#34;calls&#34;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">for</span> call <span style="color:#5bc4bf">in</span> calls:
+</span></span><span style="display:flex;"><span>            smiles <span style="color:#5bc4bf">=</span> call[<span style="color:#f99b15">0</span>]
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">try</span>:
+</span></span><span style="display:flex;"><span>                mol <span style="color:#5bc4bf">=</span> Chem<span style="color:#5bc4bf">.</span>MolFromSmiles(smiles)
+</span></span><span style="display:flex;"><span>                result <span style="color:#5bc4bf">=</span> Chem<span style="color:#5bc4bf">.</span>MolToSmiles(mol, isomericSmiles<span style="color:#5bc4bf">=</span><span style="color:#815ba4">True</span>, canonical<span style="color:#5bc4bf">=</span><span style="color:#815ba4">True</span>)
+</span></span><span style="display:flex;"><span>                return_value<span style="color:#5bc4bf">.</span>append(result)
+</span></span><span style="display:flex;"><span>            <span style="color:#815ba4">except</span> <span style="color:#ef6155">Exception</span>:
+</span></span><span style="display:flex;"><span>                return_value<span style="color:#5bc4bf">.</span>append(<span style="color:#48b685">&#34;&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        return_json <span style="color:#5bc4bf">=</span> json<span style="color:#5bc4bf">.</span>dumps({<span style="color:#48b685">&#34;replies&#34;</span>: return_value}), <span style="color:#f99b15">200</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> return_json
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">except</span> <span style="color:#ef6155">Exception</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#815ba4">return</span> json<span style="color:#5bc4bf">.</span>dumps({<span style="color:#48b685">&#34;errorMessage&#34;</span>: <span style="color:#48b685">&#34;something unexpected in input&#34;</span>}), <span style="color:#f99b15">400</span>
+</span></span></code></pre></div><p>From there you need to create a requirements.txt file with the needed single dependency.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>rdkit==2022.3.5
+</span></span></code></pre></div><p>Now you can register the fuction with cloud functions and BigQuery.  We will install it under the <code>cheminformatics</code> dataset that was created before.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#ef6155">SERVICE_ACCOUNT</span><span style="color:#5bc4bf">=</span><span style="color:#815ba4">$(</span>bq show --location<span style="color:#5bc4bf">=</span>US --format<span style="color:#5bc4bf">=</span>prettyjson --connection <span style="color:#48b685">&#34;cheminformatics-connection&#34;</span> | jq -r <span style="color:#48b685">&#39;.cloudResource.serviceAccountId&#39;</span><span style="color:#815ba4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>echo <span style="color:#48b685">&#34;Connection cheminformatics-connect service account: </span><span style="color:#f99b15">${</span><span style="color:#ef6155">SERVICE_ACCOUNT</span><span style="color:#f99b15">}</span><span style="color:#48b685">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">PROJ</span><span style="color:#5bc4bf">=</span><span style="color:#815ba4">$(</span>gcloud config list --format <span style="color:#48b685">&#39;value(core.project)&#39;</span><span style="color:#815ba4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">PERM</span><span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;roles/cloudfunctions.invoker&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">TIMEOUT</span><span style="color:#5bc4bf">=</span>600s
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">MEMORY</span><span style="color:#5bc4bf">=</span>512MB
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">MAX_INSTANCES</span><span style="color:#5bc4bf">=</span><span style="color:#f99b15">100</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gcloud beta functions deploy rdkit-canonical-smiles <span style="color:#f99b15">\
+</span></span></span><span style="display:flex;"><span><span style="color:#f99b15"></span>     --quiet --gen2 --region <span style="color:#48b685">&#34;us-east1&#34;</span> --entry-point rdkit_canonical_smiles --runtime python39 --trigger-http <span style="color:#f99b15">\
+</span></span></span><span style="display:flex;"><span><span style="color:#f99b15"></span>     --memory<span style="color:#5bc4bf">=</span><span style="color:#ef6155">$MEMORY</span> --timeout<span style="color:#5bc4bf">=</span><span style="color:#ef6155">$TIMEOUT</span> --max-instances<span style="color:#5bc4bf">=</span><span style="color:#ef6155">$MAX_INSTANCES</span>  <span style="color:#f99b15">\
+</span></span></span><span style="display:flex;"><span><span style="color:#f99b15"></span>     --update-labels <span style="color:#ef6155">package</span><span style="color:#5bc4bf">=</span>cheminformatics --update-labels <span style="color:#ef6155">function_type</span><span style="color:#5bc4bf">=</span>remote_function --update-labels <span style="color:#ef6155">software_package</span><span style="color:#5bc4bf">=</span>rdkit
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">CLOUD_TRIGGER_URL</span><span style="color:#5bc4bf">=</span><span style="color:#815ba4">$(</span>gcloud beta functions describe rdkit-canonical-smiles --gen2 --region <span style="color:#48b685">&#34;us-east1&#34;</span> --format<span style="color:#5bc4bf">=</span>json | jq -r <span style="color:#48b685">&#39;.serviceConfig.uri&#39;</span><span style="color:#815ba4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gcloud beta functions add-iam-policy-binding <span style="color:#48b685">&#34;rdkit-canonical-smiles&#34;</span> --region <span style="color:#48b685">&#34;us-east1&#34;</span> --member<span style="color:#5bc4bf">=</span>serviceAccount:<span style="color:#f99b15">${</span><span style="color:#ef6155">SERVICE_ACCOUNT</span><span style="color:#f99b15">}</span> --role<span style="color:#5bc4bf">=</span><span style="color:#f99b15">${</span><span style="color:#ef6155">PERM</span><span style="color:#f99b15">}</span> --gen2
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gcloud run services add-iam-policy-binding <span style="color:#48b685">&#34;rdkit-canonical-smiles&#34;</span> --region <span style="color:#48b685">&#34;us-east1&#34;</span> --member<span style="color:#5bc4bf">=</span>serviceAccount:<span style="color:#f99b15">${</span><span style="color:#ef6155">SERVICE_ACCOUNT</span><span style="color:#f99b15">}</span> --role<span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;roles/run.invoker&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>bq query --use_legacy_sql<span style="color:#5bc4bf">=</span>false --parameter<span style="color:#5bc4bf">=</span><span style="color:#48b685">&#34;url::</span><span style="color:#f99b15">${</span><span style="color:#ef6155">CLOUD_TRIGGER_URL</span><span style="color:#f99b15">}</span><span style="color:#48b685">&#34;</span> <span style="color:#48b685">&#39;CREATE or REPLACE FUNCTION cheminformatics.rdkit_canonical_smiles(smiles STRING) RETURNS STRING REMOTE WITH CONNECTION `us.cheminformatics-connection` OPTIONS (endpoint = @url, max_batching_rows = 2500)&#39;</span>
+</span></span></code></pre></div>
+
+
+      
+    </article>
+    
+  </div>
+
+        </div><footer>
+  <div class="container">
+    <p class="credits copyright">
+      <p class="credits theme-by">
+        
+        
+        
+        <a href="http://localhost:1313/">Flow</a>,
+        
+        &copy;
+        2025
+        <a href="http://localhost:1313/about/"></a>
+      </p>
+  </div>
+</footer></body>
+</html>

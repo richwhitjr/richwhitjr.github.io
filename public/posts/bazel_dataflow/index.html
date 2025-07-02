@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en-us"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<meta charset="utf-8" />
+
+  <title>Bazel &#43; Beam/Dataflow - Flow</title>
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+<link rel="stylesheet" href="http://localhost:1313/css/latex.css" />
+<link rel="stylesheet" href="http://localhost:1313/css/main.css" />
+<script id="MathJax-script" async src="http://localhost:1313/js/tex-mml-chtml.js"></script>
+</head>
+<body class="latex-dark">
+
+
+
+
+
+
+<header>
+  <nav class="navbar">
+  <div class="nav">
+    
+
+    <ul class="nav-links">
+      
+    </ul>
+  </div>
+</nav>
+  <div class="intro-header">
+    <div class="container">
+      <div class="posts-heading">
+        
+          <h1>Bazel &#43; Beam/Dataflow</h1>
+          
+        
+      </div>
+    </div>
+  </div>
+</header>
+<div id="content">
+  <div class="container" role="main">
+    <article class="article" class="blog-post">
+      <div class="postmeta">
+        <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>
+  Dec 27, 2022
+  
+</span>
+      </div>
+      <br>
+      
+    <p>Python Beam on DataFlow allows for a <a href="https://beam.apache.org/documentation/sdks/python-pipeline-dependencies/">few options</a> for including internal and external dependencies in your jobs.  None of these works very well with bazel however because of the way third party dependencies are packaged.</p>
+<p>The main issue is that Bazel Python does not install pip libraries on the system or in the container if you choose that route.  That means there is not a great
+way to register external dependencies with the job like mentioned in the above document.  The one route that I have found to work well and that is described below is to instead use a custom image through Bazel but with a custom launch script that sets up the pip dependencies correctly on the <code>PYTHONPATH</code>.</p>
+<p>The first step is to create the start script called by the Docker image.  We will create this in <code>start.sh</code>.  This script is doing the work on walking through the pip libraries as installed by <a href="https://github.com/bazelbuild/rules_docker#py3_image">Bazel Docker</a>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#ef6155">SCRIPT_PATH</span><span style="color:#5bc4bf">=</span><span style="color:#ef6155">$PWD</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">for</span> f in <span style="color:#48b685">`</span>ls -d external/*deps/pypi__*/site-packages<span style="color:#48b685">`</span>; <span style="color:#815ba4">do</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> <span style="color:#5bc4bf">[</span> -z <span style="color:#48b685">&#34;</span><span style="color:#ef6155">$PYTHONPATH</span><span style="color:#48b685">&#34;</span> <span style="color:#5bc4bf">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">then</span>
+</span></span><span style="display:flex;"><span>        export <span style="color:#ef6155">PYTHONPATH</span><span style="color:#5bc4bf">=</span><span style="color:#ef6155">$SCRIPT_PATH</span>/<span style="color:#ef6155">$f</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">else</span>
+</span></span><span style="display:flex;"><span>        export <span style="color:#ef6155">PYTHONPATH</span><span style="color:#5bc4bf">=</span><span style="color:#ef6155">$PYTHONPATH</span>:<span style="color:#ef6155">$SCRIPT_PATH</span>/<span style="color:#ef6155">$f</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">fi</span>    
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">done</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ef6155">PYTHONPATH</span><span style="color:#5bc4bf">=</span><span style="color:#ef6155">$PYTHONPATH</span>:<span style="color:#ef6155">$SCRIPT_PATH</span> /opt/apache/beam/boot <span style="color:#48b685">&#34;</span><span style="color:#ef6155">$@</span><span style="color:#48b685">&#34;</span>
+</span></span></code></pre></div><p>The next steps are following the Beam documentation where a Dockerfile is created with a custom entry script.  We copy the script we created above:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>FROM apache/beam_python3.10_sdk:2.43.0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>COPY start.sh /opt/start.sh
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>RUN chmod 777 /opt/start.sh
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ENTRYPOINT [&#34;/opt/start.sh&#34;]
+</span></span></code></pre></div><p>After the image is pushed to somewhere like dockerhub we need register it in the Bazel <code>WORKSPACE</code> file like any other docker image pull.  See the <a href="https://github.com/bazelbuild/rules_docker/blob/master/docs/container.md#container_pull">Github page</a> for more details.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>container_pull(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;dataflow_container&#34;</span>,
+</span></span><span style="display:flex;"><span>    registry <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;....&#34;</span>,
+</span></span><span style="display:flex;"><span>    repository <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;....&#34;</span>,
+</span></span><span style="display:flex;"><span>    tag <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;latest&#34;</span>,
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>Finally we can create push the create image to a Docker repository using the Bazel rules <code>bazel run //dataflow:push</code> if the follow build is located at <code>dataflow/BUILD.bazel</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@rules_python//python:defs.bzl&#34;</span>, <span style="color:#48b685">&#34;py_binary&#34;</span>)
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@io_bazel_rules_docker//python3:image.bzl&#34;</span>, <span style="color:#48b685">&#34;py3_image&#34;</span>)
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@io_bazel_rules_docker//container:container.bzl&#34;</span>, <span style="color:#48b685">&#34;container_image&#34;</span>)
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@deps//:requirements.bzl&#34;</span>, <span style="color:#48b685">&#34;requirement&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>py_binary(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;main&#34;</span>,
+</span></span><span style="display:flex;"><span>    srcs <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#34;main.py&#34;</span>],
+</span></span><span style="display:flex;"><span>    deps <span style="color:#5bc4bf">=</span> [requirement(<span style="color:#48b685">&#34;torch&#34;</span>)]
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>py3_image(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;py_image&#34;</span>,
+</span></span><span style="display:flex;"><span>    srcs <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#34;main.py&#34;</span>],
+</span></span><span style="display:flex;"><span>    main <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;main,</span>
+</span></span><span style="display:flex;"><span>    base <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;@dataflow_container//image&#34;</span>,
+</span></span><span style="display:flex;"><span>    deps <span style="color:#5bc4bf">=</span> [requirement(<span style="color:#48b685">&#34;torch&#34;</span>)]
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>container_image(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;image&#34;</span>,
+</span></span><span style="display:flex;"><span>    base <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;py_image&#34;</span>,
+</span></span><span style="display:flex;"><span>    entrypoint <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#34;/opt/start.sh&#34;</span>],
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>container_push(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;push,</span>
+</span></span><span style="display:flex;"><span>    format <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;Docker&#34;</span>,
+</span></span><span style="display:flex;"><span>    image <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;:image&#34;</span>,
+</span></span><span style="display:flex;"><span>    registry <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;...&#34;</span>,
+</span></span><span style="display:flex;"><span>    repository <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;...,</span>
+</span></span><span style="display:flex;"><span>    tag <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;latest&#34;</span>,
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>Now to run the job we need execute the main bazel target but specifying the docker image we just pushed pointing the job at the Docker repository.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>bazel run //dataflow:push
+</span></span><span style="display:flex;"><span>bazel run //dataflow:main -- <span style="color:#f99b15">\
+</span></span></span><span style="display:flex;"><span><span style="color:#f99b15"></span>  --runner DataflowRunner <span style="color:#f99b15">\
+</span></span></span><span style="display:flex;"><span><span style="color:#f99b15"></span>  --sdk_container_image<span style="color:#5bc4bf">=</span><span style="color:#ef6155">$REPO</span>/<span style="color:#ef6155">$IMAGE</span>:latest
+</span></span></code></pre></div>
+
+
+      
+    </article>
+    
+  </div>
+
+        </div><footer>
+  <div class="container">
+    <p class="credits copyright">
+      <p class="credits theme-by">
+        
+        
+        
+        <a href="http://localhost:1313/">Flow</a>,
+        
+        &copy;
+        2025
+        <a href="http://localhost:1313/about/"></a>
+      </p>
+  </div>
+</footer></body>
+</html>

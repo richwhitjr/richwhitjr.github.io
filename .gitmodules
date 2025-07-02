@@ -4,3 +4,6 @@
 [submodule "themes/HugoTeX"]
 	path = themes/HugoTeX
 	url = git@github.com:kaisugi/HugoTeX.git
+[submodule "themes/ananke"]
+	path = themes/ananke
+	url = https://github.com/theNewDynamic/gohugo-theme-ananke.git

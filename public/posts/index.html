@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en-us"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<meta charset="utf-8" />
+
+  <title>Posts - Flow</title>
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+<link rel="alternate" type="application/rss+xml" href="http://localhost:1313/posts/index.xml" title="Flow" />
+<link rel="stylesheet" href="http://localhost:1313/css/latex.css" />
+<link rel="stylesheet" href="http://localhost:1313/css/main.css" />
+<script id="MathJax-script" async src="http://localhost:1313/js/tex-mml-chtml.js"></script>
+</head>
+<body class="latex-dark">
+
+
+
+
+
+
+<header>
+  <nav class="navbar">
+  <div class="nav">
+    
+
+    <ul class="nav-links">
+      
+    </ul>
+  </div>
+</nav>
+  <div class="intro-header">
+    <div class="container">
+      <div class="posts-heading">
+        
+          <h1>Posts</h1>
+          
+        
+      </div>
+    </div>
+  </div>
+</header>
+<div id="content">
+<div class="container" role="main">
+    <div class="posts-list">
+      
+        
+      
+
+      
+        <article class="post-preview">
+  <a href="http://localhost:1313/posts/gcp_chem/">
+      <h2 class="post-title">RDkit &#43; GCP Sharding</h2>
+  </a>
+  <div class="postmeta">
+    <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>
+  Jul 2, 2025
+  
+</span>
+  </div>
+  <div class="post-entry">
+    
+      <p><h2 id="sharding-your-rdkit-backed-chemical-database-on-gcp">Sharding Your RDKit-Backed Chemical Database on GCP</h2>
+<p><em>Distributed Chemical Informatics | RDKit &amp; Google Cloud Run</em></p>
+<hr>
+<h3 id="introduction">Introduction</h3>
+<p>When you’re working with large libraries of molecules (e.g., millions of compounds encoded as SMILES or SDF), in-memory lookups can become a bottleneck. RDKit makes substructure, fingerprint, and similarity searches effortless—but how do you scale that across many machines without reinventing the wheel?</p>
+<p>In this post, we’ll:</p>
+<ol>
+<li><strong>Pre-shard</strong> an RDKit-compatible chemical dataset</li>
+<li>Build a <strong>per-shard microservice</strong> in Cloud Run</li>
+<li>Deploy <strong>N independent shard services</strong></li>
+<li>Implement a <strong>fan-out aggregator</strong></li>
+<li>(Optionally) front it all with <strong>API Gateway</strong></li>
+</ol>
+<hr>
+<h2 id="1-pre-shard-your-dataset">1. Pre-shard Your Dataset</h2>
+<p>Splitting your SDF/SMILES file into <em>N</em> self-contained shards lets each service load only its slice:</p></p>
+        <a href="http://localhost:1313/posts/gcp_chem/" class="post-read-more">Read More</a>
+    
+  </div>
+</article>
+      
+        <article class="post-preview">
+  <a href="http://localhost:1313/posts/bq_fns/">
+      <h2 class="post-title">BigQuery Cloud Functions</h2>
+  </a>
+  <div class="postmeta">
+    <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>
+  Dec 30, 2022
+  
+</span>
+  </div>
+  <div class="post-entry">
+    
+      <p><p>One pattern that I learned about recently is that BigQuery allows for functions to be registered with itself that are backed by GCP Cloud Functions.  This is very powerful pattern that allows for much more complex functions than what you can do with the normal BigQuery User Defined Functions.  In this post I will walk through at a high level how to do with this Python but this can work with any language supported by Cloud Functions.</p></p>
+        <a href="http://localhost:1313/posts/bq_fns/" class="post-read-more">Read More</a>
+    
+  </div>
+</article>
+      
+        <article class="post-preview">
+  <a href="http://localhost:1313/posts/bazel_dataflow/">
+      <h2 class="post-title">Bazel &#43; Beam/Dataflow</h2>
+  </a>
+  <div class="postmeta">
+    <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>
+  Dec 27, 2022
+  
+</span>
+  </div>
+  <div class="post-entry">
+    
+      <p><p>Python Beam on DataFlow allows for a <a href="https://beam.apache.org/documentation/sdks/python-pipeline-dependencies/">few options</a> for including internal and external dependencies in your jobs.  None of these works very well with bazel however because of the way third party dependencies are packaged.</p>
+<p>The main issue is that Bazel Python does not install pip libraries on the system or in the container if you choose that route.  That means there is not a great
+way to register external dependencies with the job like mentioned in the above document.  The one route that I have found to work well and that is described below is to instead use a custom image through Bazel but with a custom launch script that sets up the pip dependencies correctly on the <code>PYTHONPATH</code>.</p></p>
+        <a href="http://localhost:1313/posts/bazel_dataflow/" class="post-read-more">Read More</a>
+    
+  </div>
+</article>
+      
+      </div>
+    
+    <ul class="pager">
+      
+      
+        <li class="next">
+          <a href="http://localhost:1313/posts/page/2/">Older &rarr;</a>
+        </li>
+      
+    </ul>
+  
+</div>
+
+        </div><footer>
+  <div class="container">
+    <p class="credits copyright">
+      <p class="credits theme-by">
+        
+        
+        
+        <a href="http://localhost:1313/">Flow</a>,
+        
+        &copy;
+        2025
+        <a href="http://localhost:1313/about/"></a>
+      </p>
+  </div>
+</footer></body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en-us"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<meta charset="utf-8" />
+
+  <title>Bazel &#43; Python &#43; CUDA - Flow</title>
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
+<link rel="stylesheet" href="http://localhost:1313/css/latex.css" />
+<link rel="stylesheet" href="http://localhost:1313/css/main.css" />
+<script id="MathJax-script" async src="http://localhost:1313/js/tex-mml-chtml.js"></script>
+</head>
+<body class="latex-dark">
+
+
+
+
+
+
+<header>
+  <nav class="navbar">
+  <div class="nav">
+    
+
+    <ul class="nav-links">
+      
+    </ul>
+  </div>
+</nav>
+  <div class="intro-header">
+    <div class="container">
+      <div class="content-heading">
+        
+          <h1>Bazel &#43; Python &#43; CUDA</h1>
+          
+        
+      </div>
+    </div>
+  </div>
+</header>
+<div id="content">
+  <div class="container" role="main">
+    <article class="article" class="blog-post">
+      <div class="postmeta">
+        <span class="meta-post">
+  <i class="fa fa-calendar-alt"></i>
+  Dec 27, 2022
+  
+</span>
+      </div>
+      <br>
+      
+    <p>One of the gaps with the current <a href="https://github.com/bazelbuild/rules_python">Bazel Python Rules</a> is that it does
+not handle pip dependencies well when you need to install a different library if you have cuda available or not.
+This is a problem with torch where a different install is needed depending on cuda.  This post is a fairly minimal
+workaround for the problem where a new repository rule is created that uses different requirements.txt files if CUDA
+is found or not.  It uses the new <a href="https://github.com/bazel-contrib/rules_cuda">Cuda Rules</a> to do this.</p>
+<p>First in your <code>WORKSPACE</code> make sure that python is installed and you pick the correct toolchain for your version.  Here I
+am using python 3.10 and the version of the toolchain that was current for when this was posted.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>rules_python_version <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;834149dfcd9e0dcb9d713caeb6bf5b0584601392&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>http_archive(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;rules_python&#34;</span>,
+</span></span><span style="display:flex;"><span>    sha256 <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;0df35e6e46ea7abe0ddacc32a1d2f8884fc13ef00654411ca97e9f2c9b0589dc&#34;</span>,
+</span></span><span style="display:flex;"><span>    strip_prefix <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;rules_python-</span><span style="color:#f99b15">{}</span><span style="color:#48b685">&#34;</span><span style="color:#5bc4bf">.</span>format(rules_python_version),
+</span></span><span style="display:flex;"><span>    url <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;https://github.com/bazelbuild/rules_python/archive/</span><span style="color:#f99b15">{}</span><span style="color:#48b685">.zip&#34;</span><span style="color:#5bc4bf">.</span>format(rules_python_version),
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@rules_python//python:repositories.bzl&#34;</span>, <span style="color:#48b685">&#34;python_register_toolchains&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>python_register_toolchains(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;python3_10&#34;</span>,
+</span></span><span style="display:flex;"><span>    python_version <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;3.10&#34;</span>,
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@python3_10//:defs.bzl&#34;</span>, <span style="color:#48b685">&#34;interpreter&#34;</span>)
+</span></span></code></pre></div><p>Next in the same <code>WORKSPACE</code> file also install the rules cuda.  These rules will be used to check if cuda is installed on the machine
+running the workspace.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>http_archive(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;rules_cuda&#34;</span>,
+</span></span><span style="display:flex;"><span>    sha256 <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;d1ec8d5cbec3514c6ed00eabf168a4b4e0b9dc07797aea98671722bc257dcc23&#34;</span>,
+</span></span><span style="display:flex;"><span>    strip_prefix <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;rules_cuda-0c32b04d8af865182a3b6367c1bdd051a699c7de&#34;</span>,
+</span></span><span style="display:flex;"><span>    urls <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#34;https://github.com/bazel-contrib/rules_cuda/archive/0c32b04d8af865182a3b6367c1bdd051a699c7de.tar.gz&#34;</span>],
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@rules_cuda//cuda:repositories.bzl&#34;</span>, <span style="color:#48b685">&#34;register_detected_cuda_toolchains&#34;</span>, <span style="color:#48b685">&#34;rules_cuda_dependencies&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>rules_cuda_dependencies()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>register_detected_cuda_toolchains()
+</span></span></code></pre></div><p>After this we need to create a new rule that allows for the swapping different requirements file based on CUDA availablility.
+In this example the rule will be created in at <code>tools/python/defs.bzl</code>.</p>
+<p>At a high level the rule works like this.  Take two different requirements files and call <code>pip_install</code> on them.  This will install
+two different requirements like normal using the python rules.  To do the switch however the new rule generates a new pip rules that refers
+to the correct requirements file based on cuda being available or not.  The complete code is seen below:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@rules_python//python:pip.bzl&#34;</span>, <span style="color:#48b685">&#34;pip_install&#34;</span>)
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@rules_cuda//cuda/private:repositories.bzl&#34;</span>, <span style="color:#48b685">&#34;detect_cuda_toolkit&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">_multi_pip_parse_impl</span>(rctx):
+</span></span><span style="display:flex;"><span>    <span style="color:#48b685">&#34;&#34;&#34;Rule that finds the correct requirements file if cuda is available&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    cuda <span style="color:#5bc4bf">=</span> detect_cuda_toolkit(rctx)
+</span></span><span style="display:flex;"><span>    deps <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;cpu_deps&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">if</span> cuda<span style="color:#5bc4bf">.</span>path:
+</span></span><span style="display:flex;"><span>        deps <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;cuda_deps&#34;</span>
+</span></span><span style="display:flex;"><span>    requirements_bzl <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#48b685">def _clean_name(name):
+</span></span></span><span style="display:flex;"><span><span style="color:#48b685">    return name.replace(&#34;-&#34;, &#34;_&#34;).replace(&#34;.&#34;, &#34;_&#34;).lower()
+</span></span></span><span style="display:flex;"><span><span style="color:#48b685">def requirement(name):
+</span></span></span><span style="display:flex;"><span><span style="color:#48b685">    return &#34;@</span><span style="color:#f99b15">{name}</span><span style="color:#48b685">//pypi__&#34; + _clean_name(name)
+</span></span></span><span style="display:flex;"><span><span style="color:#48b685">&#34;&#34;&#34;</span><span style="color:#5bc4bf">.</span>format(
+</span></span><span style="display:flex;"><span>        name <span style="color:#5bc4bf">=</span> deps,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    rctx<span style="color:#5bc4bf">.</span>file(<span style="color:#48b685">&#34;requirements.bzl&#34;</span>, requirements_bzl)
+</span></span><span style="display:flex;"><span>    rctx<span style="color:#5bc4bf">.</span>file(<span style="color:#48b685">&#34;BUILD.bazel&#34;</span>, <span style="color:#48b685">&#34;exports_files([&#39;requirements.bzl&#39;])&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>_multi_pip_parse <span style="color:#5bc4bf">=</span> repository_rule(_multi_pip_parse_impl)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#815ba4">def</span> <span style="color:#06b6ef">multi_pip</span>(name, python_interpreter_target, cuda, cpu):
+</span></span><span style="display:flex;"><span>    <span style="color:#48b685">&#34;&#34;&#34;Install multiple different requirements files based on system properties&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71"># Install CPU Deps</span>
+</span></span><span style="display:flex;"><span>    pip_install(
+</span></span><span style="display:flex;"><span>        name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;cpu_deps&#34;</span>,
+</span></span><span style="display:flex;"><span>        timeout <span style="color:#5bc4bf">=</span> <span style="color:#f99b15">60</span> <span style="color:#5bc4bf">*</span> <span style="color:#f99b15">30</span>,  <span style="color:#776e71"># 30 minutes</span>
+</span></span><span style="display:flex;"><span>        python_interpreter_target <span style="color:#5bc4bf">=</span> python_interpreter_target,
+</span></span><span style="display:flex;"><span>        requirements <span style="color:#5bc4bf">=</span> cpu,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71"># Install CUDA Deps</span>
+</span></span><span style="display:flex;"><span>    pip_install(
+</span></span><span style="display:flex;"><span>        name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;cuda_deps&#34;</span>,
+</span></span><span style="display:flex;"><span>        timeout <span style="color:#5bc4bf">=</span> <span style="color:#f99b15">60</span> <span style="color:#5bc4bf">*</span> <span style="color:#f99b15">30</span>,  <span style="color:#776e71"># 30 minutes</span>
+</span></span><span style="display:flex;"><span>        python_interpreter_target <span style="color:#5bc4bf">=</span> python_interpreter_target,
+</span></span><span style="display:flex;"><span>        requirements <span style="color:#5bc4bf">=</span> cuda,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#776e71"># Pick the correct dependency based on finding CUDA</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#815ba4">return</span> _multi_pip_parse(name <span style="color:#5bc4bf">=</span> name)
+</span></span></code></pre></div><p>Finally we need to make use of new rule back in the <code>WORKSPACE</code> file.  This will load
+the new rule and give it two different requirements files wit the interpreter defined above.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;//tools/python:defs.bzl&#34;</span>, <span style="color:#48b685">&#34;multi_pip&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>multi_pip(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;deps&#34;</span>,
+</span></span><span style="display:flex;"><span>    cpu <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;//build:cpu_requirements.txt&#34;</span>,
+</span></span><span style="display:flex;"><span>    cuda <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;//build:gpu_requirements.txt&#34;</span>,
+</span></span><span style="display:flex;"><span>    python_interpreter_target <span style="color:#5bc4bf">=</span> interpreter,
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>Now we can use this like normal python rules to pull in pip dependencies using the name of given
+to the <code>multi-pip</code> library:</p>
+<div class="highlight"><pre tabindex="0" style="color:#e7e9db;background-color:#2f1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@rules_python//python:defs.bzl&#34;</span>, <span style="color:#48b685">&#34;py_binary&#34;</span>)
+</span></span><span style="display:flex;"><span>load(<span style="color:#48b685">&#34;@deps//:requirements.bzl&#34;</span>, <span style="color:#48b685">&#34;requirement&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>py_binary(
+</span></span><span style="display:flex;"><span>    name <span style="color:#5bc4bf">=</span> <span style="color:#48b685">&#34;main&#34;</span>,
+</span></span><span style="display:flex;"><span>    srcs <span style="color:#5bc4bf">=</span> [<span style="color:#48b685">&#34;main.py&#34;</span>],
+</span></span><span style="display:flex;"><span>    deps <span style="color:#5bc4bf">=</span> [requirement(<span style="color:#48b685">&#34;torch&#34;</span>)],
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div>
+
+
+      
+    </article>
+    
+  </div>
+
+        </div><footer>
+  <div class="container">
+    <p class="credits copyright">
+      <p class="credits theme-by">
+        
+        
+        
+        <a href="http://localhost:1313/">Flow</a>,
+        
+        &copy;
+        2025
+        <a href="http://localhost:1313/about/"></a>
+      </p>
+  </div>
+</footer></body>
+</html>

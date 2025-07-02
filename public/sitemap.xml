@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2025-07-02T11:18:41-04:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/</loc>
+    <lastmod>2025-07-02T11:18:41-04:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/gcp_chem/</loc>
+    <lastmod>2025-07-02T11:18:41-04:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/bq_fns/</loc>
+    <lastmod>2022-12-30T09:54:15-05:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/bazel_dataflow/</loc>
+    <lastmod>2022-12-27T20:01:55-05:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/cuda_bazel/</loc>
+    <lastmod>2022-12-27T09:13:30-05:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/flow/</loc>
+    <lastmod>2022-12-26T20:03:49-05:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/categories/</loc>
+  </url><url>
+    <loc>http://localhost:1313/series/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/</loc>
+  </url>
+</urlset>
