@@ -5,6 +5,7 @@ theme = "HugoTeX"
 DefaultContentLanguage = "en"
 enableInlineShortcodes = true
 footnoteReturnLinkContents = "^"
+publishDir = "docs"
 
 [pagination]
   pagerSize = 3
