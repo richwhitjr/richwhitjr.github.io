@@ -2,45 +2,45 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Flow</title>
-    <link>http://localhost:1313/posts/</link>
+    <link>https://richwhitjr.github.io/posts/</link>
     <description>Recent content in Posts on Flow</description>
     <generator>Hugo</generator>
     <language>en</language>
     <lastBuildDate>Fri, 30 Dec 2022 09:54:15 -0500</lastBuildDate>
-    <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://richwhitjr.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>BigQuery Cloud Functions</title>
-      <link>http://localhost:1313/posts/bq_fns/</link>
+      <link>https://richwhitjr.github.io/posts/bq_fns/</link>
       <pubDate>Fri, 30 Dec 2022 09:54:15 -0500</pubDate>
-      <guid>http://localhost:1313/posts/bq_fns/</guid>
+      <guid>https://richwhitjr.github.io/posts/bq_fns/</guid>
       <description>&lt;p&gt;One pattern that I learned about recently is that BigQuery allows for functions to be registered with itself that are backed by GCP Cloud Functions.  This is very powerful pattern that allows for much more complex functions than what you can do with the normal BigQuery User Defined Functions.  In this post I will walk through at a high level how to do with this Python but this can work with any language supported by Cloud Functions.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Bazel &#43; Beam/Dataflow</title>
-      <link>http://localhost:1313/posts/bazel_dataflow/</link>
+      <link>https://richwhitjr.github.io/posts/bazel_dataflow/</link>
       <pubDate>Tue, 27 Dec 2022 20:01:55 -0500</pubDate>
-      <guid>http://localhost:1313/posts/bazel_dataflow/</guid>
+      <guid>https://richwhitjr.github.io/posts/bazel_dataflow/</guid>
       <description>&lt;p&gt;Python Beam on DataFlow allows for a &lt;a href=&#34;https://beam.apache.org/documentation/sdks/python-pipeline-dependencies/&#34;&gt;few options&lt;/a&gt; for including internal and external dependencies in your jobs.  None of these works very well with bazel however because of the way third party dependencies are packaged.&lt;/p&gt;&#xA;&lt;p&gt;The main issue is that Bazel Python does not install pip libraries on the system or in the container if you choose that route.  That means there is not a great&#xA;way to register external dependencies with the job like mentioned in the above document.  The one route that I have found to work well and that is described below is to instead use a custom image through Bazel but with a custom launch script that sets up the pip dependencies correctly on the &lt;code&gt;PYTHONPATH&lt;/code&gt;.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Bazel &#43; Python &#43; CUDA</title>
-      <link>http://localhost:1313/posts/cuda_bazel/</link>
+      <link>https://richwhitjr.github.io/posts/cuda_bazel/</link>
       <pubDate>Tue, 27 Dec 2022 09:13:30 -0500</pubDate>
-      <guid>http://localhost:1313/posts/cuda_bazel/</guid>
+      <guid>https://richwhitjr.github.io/posts/cuda_bazel/</guid>
       <description>&lt;p&gt;One of the gaps with the current &lt;a href=&#34;https://github.com/bazelbuild/rules_python&#34;&gt;Bazel Python Rules&lt;/a&gt; is that it does&#xA;not handle pip dependencies well when you need to install a different library if you have cuda available or not.&#xA;This is a problem with torch where a different install is needed depending on cuda.  This post is a fairly minimal&#xA;workaround for the problem where a new repository rule is created that uses different requirements.txt files if CUDA&#xA;is found or not.  It uses the new &lt;a href=&#34;https://github.com/bazel-contrib/rules_cuda&#34;&gt;Cuda Rules&lt;/a&gt; to do this.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Flow</title>
-      <link>http://localhost:1313/posts/flow/</link>
+      <link>https://richwhitjr.github.io/posts/flow/</link>
       <pubDate>Mon, 26 Dec 2022 20:03:49 -0500</pubDate>
-      <guid>http://localhost:1313/posts/flow/</guid>
+      <guid>https://richwhitjr.github.io/posts/flow/</guid>
       <description>&lt;p&gt;Flow is maybe the most overused word in the Data Engineering world.  There is a running joke in the industry that every&#xA;company, at some point in their histry, has to develop an internal tool named DataFlow.  Google, now have finally&#xA;put a nail in that for new projects with it Google Cloud Offering, has only given rise the slight variations on the name&#xA;for new workflow and data systems.  It is a suffix that will not disappear.&lt;/p&gt;</description>
     </item>
     <item>
       <title></title>
-      <link>http://localhost:1313/posts/cloud_rdkit/</link>
+      <link>https://richwhitjr.github.io/posts/cloud_rdkit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/cloud_rdkit/</guid>
+      <guid>https://richwhitjr.github.io/posts/cloud_rdkit/</guid>
       <description>&lt;h2 id=&#34;sharding-your-rdkit-backed-chemical-database-on-gcp&#34;&gt;Sharding Your RDKit-Backed Chemical Database on GCP&lt;/h2&gt;&#xA;&lt;p&gt;&lt;em&gt;Distributed Chemical Informatics | RDKit &amp;amp; Google Cloud Run&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;Introduction&lt;/h3&gt;&#xA;&lt;p&gt;When you’re working with large libraries of molecules (e.g., millions of compounds encoded as SMILES or SDF), in-memory lookups can become a bottleneck. RDKit makes substructure, fingerprint, and similarity searches effortless—but how do you scale that across many machines without reinventing the wheel?&lt;/p&gt;&#xA;&lt;p&gt;In this post, we’ll:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&lt;strong&gt;Pre-shard&lt;/strong&gt; an RDKit-compatible chemical dataset&lt;/li&gt;&#xA;&lt;li&gt;Build a &lt;strong&gt;per-shard microservice&lt;/strong&gt; in Cloud Run&lt;/li&gt;&#xA;&lt;li&gt;Deploy &lt;strong&gt;N independent shard services&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Implement a &lt;strong&gt;fan-out aggregator&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;(Optionally) front it all with &lt;strong&gt;API Gateway&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;1-pre-shard-your-dataset&#34;&gt;1. Pre-shard Your Dataset&lt;/h2&gt;&#xA;&lt;p&gt;Splitting your SDF/SMILES file into &lt;em&gt;N&lt;/em&gt; self-contained shards lets each service load only its slice:&lt;/p&gt;</description>
     </item>
   </channel>
