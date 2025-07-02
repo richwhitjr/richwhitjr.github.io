@@ -1,3 +1,9 @@
+---
+title: "RDkit + GCP Sharding"
+date: 2025-07-02T11:18:41-04:00
+draft: false
+---
+
 ## Sharding Your RDKit-Backed Chemical Database on GCP
 
 *Distributed Chemical Informatics | RDKit & Google Cloud Run*
@@ -199,5 +205,3 @@ By combining RDKit’s power with GCP’s serverless footprint, you get:
 * **Cloud Workflows** for orchestration
 * **Pub/Sub + Cloud Functions** for async, event-driven queries
 * A migration onto **Bigtable** or **Spanner** for fully managed sharding
-
-Happy chem-informatics!

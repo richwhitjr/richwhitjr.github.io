@@ -6,8 +6,15 @@
     <description>Recent content on Flow</description>
     <generator>Hugo</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 30 Dec 2022 09:54:15 -0500</lastBuildDate>
+    <lastBuildDate>Wed, 02 Jul 2025 11:18:41 -0400</lastBuildDate>
     <atom:link href="https://richwhitjr.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RDkit &#43; GCP Sharding</title>
+      <link>https://richwhitjr.github.io/posts/gcp_chem/</link>
+      <pubDate>Wed, 02 Jul 2025 11:18:41 -0400</pubDate>
+      <guid>https://richwhitjr.github.io/posts/gcp_chem/</guid>
+      <description>&lt;h2 id=&#34;sharding-your-rdkit-backed-chemical-database-on-gcp&#34;&gt;Sharding Your RDKit-Backed Chemical Database on GCP&lt;/h2&gt;&#xA;&lt;p&gt;&lt;em&gt;Distributed Chemical Informatics | RDKit &amp;amp; Google Cloud Run&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;Introduction&lt;/h3&gt;&#xA;&lt;p&gt;When you’re working with large libraries of molecules (e.g., millions of compounds encoded as SMILES or SDF), in-memory lookups can become a bottleneck. RDKit makes substructure, fingerprint, and similarity searches effortless—but how do you scale that across many machines without reinventing the wheel?&lt;/p&gt;&#xA;&lt;p&gt;In this post, we’ll:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&lt;strong&gt;Pre-shard&lt;/strong&gt; an RDKit-compatible chemical dataset&lt;/li&gt;&#xA;&lt;li&gt;Build a &lt;strong&gt;per-shard microservice&lt;/strong&gt; in Cloud Run&lt;/li&gt;&#xA;&lt;li&gt;Deploy &lt;strong&gt;N independent shard services&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Implement a &lt;strong&gt;fan-out aggregator&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;(Optionally) front it all with &lt;strong&gt;API Gateway&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;1-pre-shard-your-dataset&#34;&gt;1. Pre-shard Your Dataset&lt;/h2&gt;&#xA;&lt;p&gt;Splitting your SDF/SMILES file into &lt;em&gt;N&lt;/em&gt; self-contained shards lets each service load only its slice:&lt;/p&gt;</description>
+    </item>
     <item>
       <title>BigQuery Cloud Functions</title>
       <link>https://richwhitjr.github.io/posts/bq_fns/</link>
@@ -35,13 +42,6 @@
       <pubDate>Mon, 26 Dec 2022 20:03:49 -0500</pubDate>
       <guid>https://richwhitjr.github.io/posts/flow/</guid>
       <description>&lt;p&gt;Flow is maybe the most overused word in the Data Engineering world.  There is a running joke in the industry that every&#xA;company, at some point in their histry, has to develop an internal tool named DataFlow.  Google, now have finally&#xA;put a nail in that for new projects with it Google Cloud Offering, has only given rise the slight variations on the name&#xA;for new workflow and data systems.  It is a suffix that will not disappear.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title></title>
-      <link>https://richwhitjr.github.io/posts/cloud_rdkit/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://richwhitjr.github.io/posts/cloud_rdkit/</guid>
-      <description>&lt;h2 id=&#34;sharding-your-rdkit-backed-chemical-database-on-gcp&#34;&gt;Sharding Your RDKit-Backed Chemical Database on GCP&lt;/h2&gt;&#xA;&lt;p&gt;&lt;em&gt;Distributed Chemical Informatics | RDKit &amp;amp; Google Cloud Run&lt;/em&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;Introduction&lt;/h3&gt;&#xA;&lt;p&gt;When you’re working with large libraries of molecules (e.g., millions of compounds encoded as SMILES or SDF), in-memory lookups can become a bottleneck. RDKit makes substructure, fingerprint, and similarity searches effortless—but how do you scale that across many machines without reinventing the wheel?&lt;/p&gt;&#xA;&lt;p&gt;In this post, we’ll:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&lt;strong&gt;Pre-shard&lt;/strong&gt; an RDKit-compatible chemical dataset&lt;/li&gt;&#xA;&lt;li&gt;Build a &lt;strong&gt;per-shard microservice&lt;/strong&gt; in Cloud Run&lt;/li&gt;&#xA;&lt;li&gt;Deploy &lt;strong&gt;N independent shard services&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Implement a &lt;strong&gt;fan-out aggregator&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;(Optionally) front it all with &lt;strong&gt;API Gateway&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;1-pre-shard-your-dataset&#34;&gt;1. Pre-shard Your Dataset&lt;/h2&gt;&#xA;&lt;p&gt;Splitting your SDF/SMILES file into &lt;em&gt;N&lt;/em&gt; self-contained shards lets each service load only its slice:&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
